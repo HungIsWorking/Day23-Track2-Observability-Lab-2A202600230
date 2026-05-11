@@ -39,7 +39,7 @@ smoke: ## health-check all 7 services
 	@curl -fsS http://localhost:8000/healthz   > /dev/null && echo "  app:           OK"
 	@curl -fsS http://localhost:9090/-/healthy > /dev/null && echo "  prometheus:    OK"
 	@curl -fsS http://localhost:9093/-/healthy > /dev/null && echo "  alertmanager:  OK"
-	@curl -fsS http://localhost:3000/api/health | grep -q '"database":"ok"' && echo "  grafana:       OK"
+	@curl -fsS http://localhost:3000/api/health | grep -Eq '"database"[[:space:]]*:[[:space:]]*"ok"' && echo "  grafana:       OK"
 	@curl -fsS http://localhost:3100/ready     > /dev/null && echo "  loki:          OK"
 	@curl -fsS http://localhost:16686/         > /dev/null && echo "  jaeger:        OK"
 	@curl -fsS http://localhost:8888/metrics   > /dev/null && echo "  otel-collector: OK"
