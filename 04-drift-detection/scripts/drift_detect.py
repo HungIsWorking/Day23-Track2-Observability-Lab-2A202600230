@@ -94,18 +94,39 @@ def main() -> int:
     for col, m in summary.items():
         print(f"  {col:<20} PSI={m['psi']:.3f}  KL={m['kl']:.3f}  KS={m['ks_stat']:.3f}  drift={m['drift']}")
 
-    # Optional: full Evidently HTML report (large dependency, gracefully skip if missing)
+    html_path = REPORTS_DIR / "drift-report.html"
     try:
         from evidently.report import Report
         from evidently.metric_preset import DataDriftPreset
 
         report = Report(metrics=[DataDriftPreset()])
         report.run(reference_data=reference, current_data=current)
-        html_path = REPORTS_DIR / "drift-report.html"
         report.save_html(str(html_path))
         print(f"Wrote: {html_path}")
-    except ImportError:
-        print("evidently not installed; skipping HTML report. Install with: pip install evidently")
+    except Exception as exc:
+        rows = "\n".join(
+            f"<tr><td>{col}</td><td>{m['psi']}</td><td>{m['kl']}</td><td>{m['ks_stat']}</td><td>{m['ks_pvalue']}</td><td>{m['drift']}</td></tr>"
+            for col, m in summary.items()
+        )
+        html_path.write_text(
+            """<!doctype html>
+<html>
+<head><meta charset='utf-8'><title>Drift Report</title></head>
+<body>
+  <h1>Drift report (fallback)</h1>
+  <p>Evidently report generation failed at runtime; fallback summary is shown below.</p>
+  <pre>{error}</pre>
+  <table border='1' cellpadding='6' cellspacing='0'>
+    <thead><tr><th>feature</th><th>psi</th><th>kl</th><th>ks_stat</th><th>ks_pvalue</th><th>drift</th></tr></thead>
+    <tbody>
+      {rows}
+    </tbody>
+  </table>
+</body>
+</html>
+""".format(error=str(exc), rows=rows)
+        )
+        print(f"Wrote fallback HTML: {html_path}")
     return 0
 
 

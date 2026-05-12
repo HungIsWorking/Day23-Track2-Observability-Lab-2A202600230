@@ -11,7 +11,7 @@
       "id": 1, "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "prometheus"},
       "targets": [{
-        "expr": "sum by (direction) (rate(inference_tokens_total[1m]))",
+        "expr": "sum by (direction) (rate(inference_tokens_total[5m]))",
         "legendFormat": "{{direction}}", "refId": "A"
       }],
       "fieldConfig": {"defaults": {"unit": "ops"}}

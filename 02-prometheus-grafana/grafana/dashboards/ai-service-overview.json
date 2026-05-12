@@ -16,7 +16,7 @@
       "id": 1, "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
       "datasource": {"type": "prometheus", "uid": "prometheus"},
       "targets": [{
-        "expr": "sum by (status) (rate(inference_requests_total{model=~\"$model\"}[1m]))",
+        "expr": "sum by (status) (rate(inference_requests_total{model=~\"$model\"}[5m]))",
         "legendFormat": "{{status}}", "refId": "A"
       }],
       "fieldConfig": {"defaults": {"unit": "reqps"}}
@@ -60,7 +60,7 @@
       "id": 5, "gridPos": {"x": 12, "y": 8, "w": 6, "h": 6},
       "datasource": {"type": "prometheus", "uid": "prometheus"},
       "targets": [{
-        "expr": "sum by (direction) (rate(inference_tokens_total{model=~\"$model\"}[1m]))",
+        "expr": "sum by (direction) (rate(inference_tokens_total{model=~\"$model\"}[5m]))",
         "legendFormat": "{{direction}}", "refId": "A"
       }],
       "fieldConfig": {"defaults": {"unit": "ops"}}

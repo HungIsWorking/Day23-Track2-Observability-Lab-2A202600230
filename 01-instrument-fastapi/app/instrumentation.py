@@ -51,7 +51,7 @@ GPU_UTIL = Gauge(
 tracer = trace.get_tracer(__name__)
 
 
-def setup_otel() -> None:
+def setup_otel(app) -> None:
     """Configure OTLP trace export + FastAPI auto-instrumentation."""
     resource = Resource.create(
         {
@@ -71,9 +71,20 @@ def setup_otel() -> None:
     trace.set_tracer_provider(provider)
     # Auto-instrument FastAPI handlers (creates server spans for every route)
     from fastapi import FastAPI  # local import: only needed at setup
+    from opentelemetry.instrumentation.requests import RequestsInstrumentor
 
-    FastAPIInstrumentor().instrument()
+    FastAPIInstrumentor().instrument_app(app)
+    RequestsInstrumentor().instrument()
     _configure_logging()
+
+
+def _add_otel_trace_info(logger, method_name, event_dict):
+    span = trace.get_current_span()
+    if span.is_recording():
+        ctx = span.get_span_context()
+        event_dict["trace_id"] = format(ctx.trace_id, "032x")
+        event_dict["span_id"] = format(ctx.span_id, "016x")
+    return event_dict
 
 
 def _configure_logging() -> None:
@@ -85,6 +96,7 @@ def _configure_logging() -> None:
     structlog.configure(
         processors=[
             structlog.contextvars.merge_contextvars,
+            _add_otel_trace_info,
             structlog.processors.add_log_level,
             structlog.processors.TimeStamper(fmt="iso"),
             structlog.processors.JSONRenderer(),
